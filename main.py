@@ -6,6 +6,7 @@ import time
 sys.path.append(os.path.join("pkg"))
 from model import Model
 from agentRnd import AgentRnd
+from config import Config
 
 
 ## Metodo utilizado para permitir que o usuario construa o labirindo clicando em cima
@@ -19,21 +20,8 @@ def buildMaze(model):
     model.updateMaze()
 
 def main():
-    # Lê arquivo config.txt
-    arq = open(os.path.join("config_data","config.txt"),"r")
-    configDict = {} 
-    for line in arq:
-        ## O formato de cada linha é:var=valor
-        ## As variáveis são 
-        ##  maxLin, maxCol que definem o tamanho do labirinto
-        ## Tv e Ts: tempo limite para vasculhar e tempo para salvar
-        ## Bv e Bs: bateria inicial disponível ao agente vasculhador e ao socorrista
-        ## Ks :capacidade de carregar suprimentos em número de pacotes (somente para o ag. socorrista)
-
-        values = line.split("=")
-        configDict[values[0]] = int(values[1])
-
-    print("dicionario config: ", configDict)
+    # Cria dicionario com as configuracoes do ambiente
+    configDict = Config("config_data/ambiente.txt", "config_data/sinaisvitais.txt")
 
     # Cria o ambiente (modelo) = Labirinto com suas paredes
     mesh = "square"
@@ -41,25 +29,26 @@ def main():
     ## nome do arquivo de configuracao do ambiente - deve estar na pasta <proj>/config_data
     loadMaze = "ambiente"
 
-    model = Model(configDict["maxLin"], configDict["maxCol"], mesh, loadMaze)
+    model = Model(configDict, mesh, loadMaze)
     buildMaze(model)
 
     model.maze.board.posAgent
-    model.maze.board.posGoal
+    #model.maze.board.posGoal
     # Define a posição inicial do agente no ambiente - corresponde ao estado inicial
     model.setAgentPos(model.maze.board.posAgent[0],model.maze.board.posAgent[1])
-    model.setGoalPos(model.maze.board.posGoal[0],model.maze.board.posGoal[1])  
+    #model.setGoalPos(model.maze.board.posGoal[0],model.maze.board.posGoal[1])  
     model.draw()
 
     # Cria um agente
-    agent = AgentRnd(model,configDict)
+    #agent = AgentRnd(model,configDict.ambiente)
 
     ## Ciclo de raciocínio do agente
-    agent.deliberate()
-    while agent.deliberate() != -1:
-        model.draw()
-        time.sleep(0.3) # para dar tempo de visualizar as movimentacoes do agente no labirinto
-    model.draw()    
+    # agent.deliberate()
+    # while agent.deliberate() != -1:
+    #     model.draw()
+    #     time.sleep(0.3) # para dar tempo de visualizar as movimentacoes do agente no labirinto
+    # model.draw()    
+    time.sleep(5)
         
 if __name__ == '__main__':
     main()
