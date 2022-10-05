@@ -5,7 +5,7 @@ import time
 ## Importa as classes que serao usadas
 sys.path.append(os.path.join("pkg"))
 from model import Model
-from agentRnd import AgentRnd
+from agentExplorer import AgentExplorer
 from config import Config
 
 
@@ -29,7 +29,7 @@ def main():
     ## nome do arquivo de configuracao do ambiente - deve estar na pasta <proj>/config_data
     loadMaze = "ambiente"
 
-    model = Model(configDict, mesh, loadMaze)
+    model = Model(configDict.ambiente, mesh, loadMaze)
     buildMaze(model)
 
     model.maze.board.posAgent
@@ -40,15 +40,15 @@ def main():
     model.draw()
 
     # Cria um agente
-    #agent = AgentRnd(model,configDict.ambiente)
+    agent = AgentExplorer(model,configDict.ambiente)
 
     ## Ciclo de raciocínio do agente
-    # agent.deliberate()
-    # while agent.deliberate() != -1:
-    #     model.draw()
-    #     time.sleep(0.3) # para dar tempo de visualizar as movimentacoes do agente no labirinto
-    # model.draw()    
-    time.sleep(5)
+    agent.deliberate()
+    while agent.deliberate() != -1:
+        model.draw()
+        time.sleep(0.05) # para dar tempo de visualizar as movimentacoes do agente no labirinto
+    model.draw()    
+    #time.sleep(3)
         
 if __name__ == '__main__':
     main()

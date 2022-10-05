@@ -13,18 +13,18 @@ class Model:
         @param load: define o nome do arquivo que contém o mapa a ser usado
         """
 
-        if configDict.getYMax() <= 0:
+        self.rows = configDict["YMax"]
+        self.columns = configDict["XMax"]
+
+        if self.rows <= 0:
             self.rows = 5
-        else:
-            self.rows = configDict.getYMax()
-        if configDict.getXMax() <= 0:
+        if self.columns <= 0:
             self.columns = 5
-        else:
-            self.columns = configDict.getXMax()
+    
         self.mesh = mesh
 
         ## Seta a posicao do agente
-        self.agentPos = configDict.getBase()
+        self.agentPos = configDict["Base"]
         ## Seta a posicao do objetivo
         self.goalPos = [0,0]
 
@@ -172,9 +172,10 @@ class Model:
         @param victimId é a posição da vítima dentro do vetor de sinais vitais
         @return a lista de sinais vitais ou uma lista vazia caso a vítima nao exista
         """
-        if victimId < self.getNumberOfVictims():
-            return self.maze.diffAccess[victimId - 1]
-        return []
+        pass
+        # if victimId < self.getNumberOfVictims():
+        #     return self.maze.diffAccess[victimId - 1]
+        # return []
 
     def isThereVictim(self):
         """ retorna o id da vitima que está na posicao corrente do agente.

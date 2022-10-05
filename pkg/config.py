@@ -51,41 +51,11 @@ class Config:
         # teste
         # print(self.sinaisVitais)
 
-    def getBase(self):
-        return self.ambiente["Base"]
-
-    def getTe(self):
-            return self.ambiente["Te"]
-
-    def getTs(self):
-        return self.ambiente["Ts"]
-
-    def getXMax(self):
-        return self.ambiente["XMax"]
-
-    def getYMax(self):
-        return self.ambiente["YMax"]
-
-    def getVitimas(self):
-        return self.ambiente["Vitimas"]
-
-    def getParedes(self):
-        return self.ambiente["Parede"]
-    
-    def getSinaisVitais(self):
-        return self.sinaisVitais
-
 ## Para teste da classe
 # def main():
 #     config = Config("config_data/ambiente.txt", "config_data/sinaisvitais.txt")
-#     # print(config.getSinaisVitais())
-#     # print(config.getBase(), "\n",
-#     #       config.getTe(), "\n",
-#     #       config.getTs(), "\n",
-#     #       config.getXMax(), "\n",
-#     #       config.getYMax(), "\n",
-#     #       config.getVitimas(), "\n",
-#     #       config.getParedes())
+#     # print(config.sinaisVitais)
+#     # print(config.ambiente)
 
     
 
