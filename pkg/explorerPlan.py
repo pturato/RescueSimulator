@@ -133,8 +133,7 @@ class ExplorerPlan:
             result = self.getNextPosition()
 
         return result
-
-    ## TO DO
+        
     def run_valid_action(self, previousAction):
         if previousAction == "nop":
             return
@@ -146,7 +145,6 @@ class ExplorerPlan:
 
     ## TO DO
     def run_invalid_action(self):
-        
         pass
 
     def do(self):

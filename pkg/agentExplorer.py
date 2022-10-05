@@ -79,6 +79,10 @@ class AgentExplorer:
         self.previousAction = "nop"    ## nenhuma (no operation)
         self.expectedState = self.currentState
 
+        ## incializa lista de vitimas encontradas no ambiente
+        self.vitimas = []
+        self.vitimas_id = []
+
     ## Metodo que define a deliberacao do agente 
     def deliberate(self):
         ## Verifica se há algum plano a ser executado
@@ -99,7 +103,7 @@ class AgentExplorer:
         if not (self.currentState == self.expectedState):
             print("---> erro na execucao da acao ", self.previousAction, ": esperava estar em ", self.expectedState, ", mas estou em ", self.currentState)
 
-            ## TO DO
+            #TO DO
             ## função no plano para atualizar matriz de possiveis ações
             self.plan.run_invalid_action() #passar qual ação deu ruim
         else:
@@ -122,9 +126,16 @@ class AgentExplorer:
         
         ## Verifica se tem vitima na posicao atual    
         victimId = self.victimPresenceSensor()
-        if victimId > 0:
+        if victimId > 0 and victimId not in self.vitimas_id:
+            self.vitimas_id.append(victimId)
+            ## coloca a posição e os sinais vitais da vítima encontrada na lista de vítimas
+            self.vitimas.append([(self.currentState.row, self.currentState.col), self.victimVitalSignalsSensor(victimId)])
+            ## consome tempo gasto para ler sinais vitais e aumenta o custo da ação com o total
+            self.tl -= 2.0
+            self.costAll += 2.0
             print ("vitima encontrada em ", self.currentState, " id: ", victimId, " sinais vitais: ", self.victimVitalSignalsSensor(victimId))
             print ("vitima encontrada em ", self.currentState, " id: ", victimId, " dif de acesso: ", self.victimDiffOfAcessSensor(victimId))
+        print(self.vitimas, len(self.vitimas))
         
         ## TO DO
         # criar lista de vitimas 
