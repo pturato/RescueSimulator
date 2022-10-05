@@ -83,8 +83,26 @@ class AgentExplorer:
         self.vitimas = []
         self.vitimas_id = []
 
+        ## guarda as posições exploradas
+        self.positions = []
+
+        ## tipos de estados
+        self.PAREDE = -1
+        self.LIVRE = 0
+
+        ## inicializa as posições como paredes
+        for i in range(configDict["YMax"]):
+            position = []
+            for j in range(configDict["XMax"]):
+                position.append(self.PAREDE)
+            self.positions.append(position)
+
     ## Metodo que define a deliberacao do agente 
     def deliberate(self):
+        ## identifica tipo de estado
+        self.positions[self.currentState.row][self.currentState.col] = self.LIVRE 
+        print(self.positions)
+
         ## Verifica se há algum plano a ser executado
         if len(self.libPlan) == 0:
             return -1   ## fim da execucao do agente, acabaram os planos
