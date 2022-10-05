@@ -27,10 +27,12 @@ class Square:
         self.actionable = False
         self.stateAction = False
 
+        self.visited = False
 
     ## Seta se o agente está dentro
     def setAgent(self, agentIn):
         self.agent = agentIn
+        self.visited = True
 
     ## Seta se o objetivo está dentro
     def setGoal(self, goalIn):
@@ -50,9 +52,9 @@ class Square:
         elif self.color != False:
             pygame.draw.rect(self.screen,self.color,(self.ref[0],self.ref[1],self.side,self.side))
         elif self.victim == True:
-            pygame.draw.rect(self.screen,(240,0,0),(self.ref[0],self.ref[1],self.side,self.side))
+            pygame.draw.rect(self.screen,(240,0,0) if self.visited else (0,0,0),(self.ref[0],self.ref[1],self.side,self.side))
         else:
-            pygame.draw.rect(self.screen,(255,255,255),(self.ref[0],self.ref[1],self.side,self.side))
+            pygame.draw.rect(self.screen,(255,255,255) if self.visited else (210,210,210),(self.ref[0],self.ref[1],self.side,self.side))
         ## Desenha o contorno preto
         pygame.draw.rect(self.screen,(0,0,0),(self.ref[0],self.ref[1],self.side,self.side),1)
             
