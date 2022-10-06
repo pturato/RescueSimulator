@@ -21,7 +21,7 @@ def buildMaze(model):
 
 def main():
     # Cria dicionario com as configuracoes do ambiente
-    configDict = Config("config_data/ambiente.txt", "config_data/sinaisvitais.txt")
+    configDict = Config("config_data/ambiente.txt", "config_data/sinais_vitais_com_label.txt")
 
     # Cria o ambiente (modelo) = Labirinto com suas paredes
     mesh = "square"
@@ -46,7 +46,7 @@ def main():
     agent.deliberate()
     while agent.deliberate() != -1:
         model.draw()
-        time.sleep(0.3) # para dar tempo de visualizar as movimentacoes do agente no labirinto
+        time.sleep(0.01) # para dar tempo de visualizar as movimentacoes do agente no labirinto
     model.draw()    
     #time.sleep(3)
         
