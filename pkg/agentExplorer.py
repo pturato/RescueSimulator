@@ -8,6 +8,7 @@ from aEstrela import astar
 ## Importa Classes necessarias para o funcionamento
 from model import Model
 from problem import Problem
+from returnPlan import ReturnPlan
 from state import State
 from random import randint
 
@@ -76,6 +77,12 @@ class AgentExplorer:
         ## Adiciona o(s) planos a biblioteca de planos do agente
         self.libPlan=[self.plan]
 
+        ## Cria a instancia do plano para se movimentar aleatoriamente no labirinto (sem nenhuma acao) 
+        self.plan = ReturnPlan(model.rows, model.columns, self.prob.goalState, initial, "goal", self.mesh)
+
+        ## Adiciona o(s) planos a biblioteca de planos do agente
+        self.libPlan.append(self.plan)
+
         ## inicializa acao do ciclo anterior com o estado esperado
         self.previousAction = "nop"    ## nenhuma (no operation)
         self.expectedState = self.currentState
@@ -102,6 +109,8 @@ class AgentExplorer:
         self.tv = 0
 
         self.bestPath = []
+
+        self.returning = False
 
     ## Metodo que define a deliberacao do agente 
     def deliberate(self):
@@ -161,23 +170,23 @@ class AgentExplorer:
             print ("vitima encontrada em ", self.currentState, " id: ", victimId, " dif de acesso: ", self.victimDiffOfAcessSensor(victimId))
         #print(self.vitimas, len(self.vitimas))
 
-        ## verificar o tempo 
-        self.bestPath = astar(self.positions, 
-                             (self.currentState.row, self.currentState.col), 
-                             (self.plan.initialState.row, self.plan.initialState.col))
-        self.tv = self.bestPath[0]
-        print(self.bestPath)
-        #print("Tv ",self.tv , self.tl - 3.5)
-        if self.tv > self.tl - 3.5:
-            self.bestPath[1].pop(0)
-            print("precisa voltar!!!!")
-            while len(self.bestPath[1]) > 0:
-                self.returnToBase()
-            return -1
-
+        if not self.returning:
+            ## verificar o tempo 
+            self.tv = self.libPlan[1].getTempoVolta(self.positions, 
+                                (self.currentState.row, self.currentState.col), 
+                                (self.plan.initialState.row, self.plan.initialState.col))
+            print("Tv", self.tv)
+            if self.tv > self.tl - 3.5:
+            #if self.tv > self.tl - 10:
+                self.libPlan.pop(0)
+                self.plan = self.libPlan[0]
+                self.plan.updateCurrentState(self.currentState)
+                self.returning = True
         ## Define a proxima acao a ser executada
         ## currentAction eh uma tupla na forma: <direcao>, <state>
         result = self.plan.chooseAction()
+        if result == None:
+            return -1
         print("Ag deliberou pela acao: ", result[0], " o estado resultado esperado é: ", result[1])
 
         ## Executa esse acao, atraves do metodo executeGo 
@@ -186,52 +195,6 @@ class AgentExplorer:
         self.expectedState = result[1]       
 
         return 1
-
-    def returnToBase(self):
-        pass
-        # actions = {
-        #     "N" : (-1, 0),
-        #     "S" : (1, 0),
-        #     "L" : (0, 1),
-        #     "O" : (0, -1),
-        #     "NE" : (-1, 1),
-        #     "NO" : (-1, -1),
-        #     "SE" : (1, 1),
-        #     "SO" : (1, -1)
-        # }
-        # nextState = self.bestPath[1].pop(0)
-
-        # print("NextState",nextState)
-        # mov = [nextState[0] - self.currentState.row, nextState[1] - self.currentState.col]
-
-        # if actions["N"] == mov:
-        #     action = "N"
-        # elif actions["S"] == mov:
-        #     action = "S"
-        # elif actions["L"] == mov:
-        #     action = "L"
-        # elif actions["O"] == mov:
-        #     action = "O"
-        # elif actions["NE"] == mov:
-        #     action = "NE"
-        # elif actions["NO"] == mov:
-        #     action = "NO"
-        # elif actions["SE"] == mov:
-        #     action = "SE"
-        # elif actions["SO"] == mov:
-        #     action = "SO"
-        # self.currentState = nextState
-        # self.plan.updateCurrentState(self.currentState) # atualiza o current state no plano
-        # print("Ag esta em: ", self.currentState)
-
-        # self.costAll += self.prob.getActionCost(self.previousAction)
-        # print ("Custo até o momento (com a ação escolhida):", self.costAll) 
-
-        # ## consome o tempo gasto
-        # self.tl -= self.prob.getActionCost(self.previousAction)
-        # print("Tempo disponivel: ", self.tl)
-
-        # self.executeGo(action)
 
     ## Metodo que executa as acoes
     def executeGo(self, action):

@@ -88,15 +88,35 @@ def astar(maze, start, end):
 
         # Loop through children
         for child in children:
+            #se for diagonal
+            
+            if(current_node.position[0]!=child.position[0] and current_node.position[1]!=child.position[1]):
+                if(current_node.position[0]<child.position[0] and current_node.position[1]<child.position[1]):
+                    if(maze[current_node.position[0]+1][current_node.position[1]] == 1 and 
+                       maze[current_node.position[0]][current_node.position[1]+1] == 1):
+                        continue
+                elif(current_node.position[0]<child.position[0] and current_node.position[1]>child.position[1]):
+                    if(maze[current_node.position[0]+1][current_node.position[1]] == 1 and 
+                       maze[current_node.position[0]][current_node.position[1]-1] == 1):
+                        continue
+                elif(current_node.position[0]>child.position[0] and current_node.position[1]<child.position[1]):
+                    if(maze[current_node.position[0]-1][current_node.position[1]] == 1 and 
+                       maze[current_node.position[0]][current_node.position[1]+1] == 1):
+                        continue
+                elif(current_node.position[0]>child.position[0] and current_node.position[1]>child.position[1]):
+                    if(maze[current_node.position[0]-1][current_node.position[1]] == 1 and 
+                       maze[current_node.position[0]][current_node.position[1]-1] == 1):
+                        continue
             # Child is on the closed list
             for closed_child in closed_list:
                 if child == closed_child:
                     break
             else:
                 # Create the f, g, and h values
-                child.g = current_node.g + 1
+                child.g = current_node.g + distance_childtocurrent(current_node.position, child.position)
+                child.h = ((child.position[0] - end_node.position[0]) ** 2) + ((child.position[1] - end_node.position[1]) ** 2)
                 # H: Manhattan distance to end point
-                child.h = abs(child.position[0] - end_node.position[0]) + abs(child.position[1] - end_node.position[1])
+                #child.h = abs(child.position[0] - end_node.position[0]) + abs(child.position[1] - end_node.position[1])
                 child.f = child.g + child.h
 
                 # Child is already in the open list
@@ -108,57 +128,3 @@ def astar(maze, start, end):
                 else:
                     # Add the child to the open list
                     open_list.append(child)
-
-
-        # for child in children:
-            
-        #     # row_dif = child.position[0] - current_node.position[0]
-        #     # col_dif = child.position[1] - current_node.position[1]
-
-        #     # #não considerar as diagonais com parede
-        #     # if ([child.position[0] + row_dif][current_node.position[1]] == 1 and
-        #     #     [child.position[0]][current_node.position[1] + col_dif] == 1):
-        #     #     continue
-            
-        #     #se for diagonal
-            
-        #     if(current_node.position[0]!=child.position[0] and current_node.position[1]!=child.position[1]):
-        #         if(current_node.position[0]<child.position[0] and current_node.position[1]<child.position[1]):
-        #             if(maze[current_node.position[0]+1][current_node.position[1]] == 1 and 
-        #                maze[current_node.position[0]][current_node.position[1]+1] == 1):
-        #                 continue
-        #         elif(current_node.position[0]<child.position[0] and current_node.position[1]>child.position[1]):
-        #             if(maze[current_node.position[0]+1][current_node.position[1]] == 1 and 
-        #                maze[current_node.position[0]][current_node.position[1]-1] == 1):
-        #                 continue
-        #         elif(current_node.position[0]>child.position[0] and current_node.position[1]<child.position[1]):
-        #             if(maze[current_node.position[0]-1][current_node.position[1]] == 1 and 
-        #                maze[current_node.position[0]][current_node.position[1]+1] == 1):
-        #                 continue
-        #         elif(current_node.position[0]>child.position[0] and current_node.position[1]>child.position[1]):
-        #             if(maze[current_node.position[0]-1][current_node.position[1]] == 1 and 
-        #                maze[current_node.position[0]][current_node.position[1]-1] == 1):
-        #                 continue
-
-        #         #print()
-
-        #     # Child is on the closed list
-        #     for closed_child in closed_list:
-        #         if child == closed_child:
-        #             continue
-
-        #     # Create the f, g, and h values
-        #     child.g = current_node.g + distance_childtocurrent(current_node.position, child.position) #distance between child and current
-        #     child.h = ((child.position[0] - end_node.position[0]) ** 2) + ((child.position[1] - end_node.position[1]) ** 2)
-        #     #print("g do filho = ",child.g)
-        #     child.f = child.g + child.h
-
-        #     # Child is already in the open list
-        #     for open_node in open_list:
-        #         if child == open_node and child.g > open_node.g:
-        #             #print(len(open_list))
-        #             #sleep(2)
-        #             continue
-
-        #     # Add the child to the open list
-        #     open_list.append(child)
