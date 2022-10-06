@@ -3,6 +3,7 @@
 ### Executa raciocínio on-line: percebe --> [delibera] --> executa ação --> percebe --> ...
 import sys
 import os
+from aEstrela import astar
 
 ## Importa Classes necessarias para o funcionamento
 from model import Model
@@ -87,7 +88,7 @@ class AgentExplorer:
         self.positions = []
 
         ## tipos de estados
-        self.PAREDE = -1
+        self.PAREDE = 1
         self.LIVRE = 0
 
         ## inicializa as posições como paredes
@@ -97,11 +98,16 @@ class AgentExplorer:
                 position.append(self.PAREDE)
             self.positions.append(position)
 
+        ## tempo de volta
+        self.tv = 0
+
+        self.bestPath = []
+
     ## Metodo que define a deliberacao do agente 
     def deliberate(self):
         ## identifica tipo de estado
         self.positions[self.currentState.row][self.currentState.col] = self.LIVRE 
-        print(self.positions)
+        #print("POSITIONS ",self.positions)
 
         ## Verifica se há algum plano a ser executado
         if len(self.libPlan) == 0:
@@ -153,11 +159,21 @@ class AgentExplorer:
             self.costAll += 2.0
             print ("vitima encontrada em ", self.currentState, " id: ", victimId, " sinais vitais: ", self.victimVitalSignalsSensor(victimId))
             print ("vitima encontrada em ", self.currentState, " id: ", victimId, " dif de acesso: ", self.victimDiffOfAcessSensor(victimId))
-        print(self.vitimas, len(self.vitimas))
-        
-        ## TO DO
-        # criar lista de vitimas 
-        # considerar tempo para ler sinais vitais
+        #print(self.vitimas, len(self.vitimas))
+
+        ## verificar o tempo 
+        self.bestPath = astar(self.positions, 
+                             (self.currentState.row, self.currentState.col), 
+                             (self.plan.initialState.row, self.plan.initialState.col))
+        self.tv = self.bestPath[0]
+        print(self.bestPath)
+        #print("Tv ",self.tv , self.tl - 3.5)
+        if self.tv > self.tl - 3.5:
+            self.bestPath[1].pop(0)
+            print("precisa voltar!!!!")
+            while len(self.bestPath[1]) > 0:
+                self.returnToBase()
+            return -1
 
         ## Define a proxima acao a ser executada
         ## currentAction eh uma tupla na forma: <direcao>, <state>
@@ -170,6 +186,52 @@ class AgentExplorer:
         self.expectedState = result[1]       
 
         return 1
+
+    def returnToBase(self):
+        pass
+        # actions = {
+        #     "N" : (-1, 0),
+        #     "S" : (1, 0),
+        #     "L" : (0, 1),
+        #     "O" : (0, -1),
+        #     "NE" : (-1, 1),
+        #     "NO" : (-1, -1),
+        #     "SE" : (1, 1),
+        #     "SO" : (1, -1)
+        # }
+        # nextState = self.bestPath[1].pop(0)
+
+        # print("NextState",nextState)
+        # mov = [nextState[0] - self.currentState.row, nextState[1] - self.currentState.col]
+
+        # if actions["N"] == mov:
+        #     action = "N"
+        # elif actions["S"] == mov:
+        #     action = "S"
+        # elif actions["L"] == mov:
+        #     action = "L"
+        # elif actions["O"] == mov:
+        #     action = "O"
+        # elif actions["NE"] == mov:
+        #     action = "NE"
+        # elif actions["NO"] == mov:
+        #     action = "NO"
+        # elif actions["SE"] == mov:
+        #     action = "SE"
+        # elif actions["SO"] == mov:
+        #     action = "SO"
+        # self.currentState = nextState
+        # self.plan.updateCurrentState(self.currentState) # atualiza o current state no plano
+        # print("Ag esta em: ", self.currentState)
+
+        # self.costAll += self.prob.getActionCost(self.previousAction)
+        # print ("Custo até o momento (com a ação escolhida):", self.costAll) 
+
+        # ## consome o tempo gasto
+        # self.tl -= self.prob.getActionCost(self.previousAction)
+        # print("Tempo disponivel: ", self.tl)
+
+        # self.executeGo(action)
 
     ## Metodo que executa as acoes
     def executeGo(self, action):
