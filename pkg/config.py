@@ -42,7 +42,7 @@ class Config:
     def loadSinaisVitais(self):
         arq = open(self.sinaisVitaisPath, "r")
         for line in arq:
-            values = line.split(",")
+            values = line.replace("\n","").split(",")
             self.sinaisVitais.append(
                 [
                     float(x) if i > 0 else int(x) for i, x in enumerate(values)
