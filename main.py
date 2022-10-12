@@ -6,6 +6,7 @@ import time
 sys.path.append(os.path.join("pkg"))
 from model import Model
 from agentExplorer import AgentExplorer
+from agentSalvador import AgentSalvador
 from config import Config
 
 
@@ -50,6 +51,25 @@ def main():
         time.sleep(0.01) # para dar tempo de visualizar as movimentacoes do agente no labirinto
     model.draw()    
     #time.sleep(3)
+
+    vitimas = agent.vitimasEncontradas()
+    maze = agent.mazeExplorado()
+    #print(maze)
+    #print(vitimas)
+
+    # Cria um agente salvador
+    agentSalvador = AgentSalvador(model,configDict.ambiente) 
+
+    #plano de ação
+    agentSalvador.planoAcao(vitimas, maze)
+
+    # ## Ciclo de raciocínio do agente
+    # agentSalvador.deliberate()
+    # while agentSalvador.deliberate() != -1:
+    #     model.draw()
+    #     time.sleep(0.01) # para dar tempo de visualizar as movimentacoes do agente no labirinto
+    # model.draw()    
+    # #time.sleep(3)
         
 if __name__ == '__main__':
     main()

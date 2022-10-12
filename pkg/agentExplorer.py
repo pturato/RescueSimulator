@@ -258,3 +258,9 @@ class AgentExplorer:
 
     def actionDo(self, posAction, action = True):
         self.model.do(posAction, action)
+
+    def vitimasEncontradas(self):
+        return self.vitimas
+
+    def mazeExplorado(self):
+        return self.positions

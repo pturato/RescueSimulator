@@ -1,6 +1,4 @@
-## AGENTE EXPLORADOR
-### Agente que fixa um objetivo aleatório e anda aleatoriamente pelo labirinto até encontrá-lo.
-### Executa raciocínio on-line: percebe --> [delibera] --> executa ação --> percebe --> ...
+## AGENTE SALVADOR
 import sys
 import os
 from aEstrela import astar
@@ -12,6 +10,8 @@ from returnPlan import ReturnPlan
 from state import State
 from random import randint
 from calculos import *
+from genetico import *
+from todosParaTodos import *
 
 ## Importa o algoritmo para o plano
 from explorerPlan import ExplorerPlan
@@ -21,17 +21,17 @@ sys.path.append(os.path.join("pkg", "planner"))
 from planner import Planner
 
 ## Classe que define o Agente
-class AgentExplorer:
+class AgentSalvador:
     def __init__(self, model, configDict):
         """ 
         Construtor do agente random
         @param model referencia o ambiente onde o agente estah situado
         """
-       
         self.model = model
 
         ## Obtem o tempo que tem para executar
-        self.tl = configDict["Te"]
+        self.tl = configDict["Ts"]
+        self.base = configDict["Base"]
         print("Tempo disponivel: ", self.tl)
         
         ## Pega o tipo de mesh, que está no model (influência na movimentação)
@@ -112,6 +112,17 @@ class AgentExplorer:
         self.bestPath = []
 
         self.returning = False
+
+    def planoAcao(self, vitimas, maze):
+        #REVER AQUI
+        #ARRUMAR A BASE NO TODOS PARA TODOS
+        tempoMax = self.tl
+        #print("base", base, " e tempo max" ,tempoMax)
+        caminhos = todosParaTodos(maze, vitimas, tuple(self.base)) 
+        #print(caminhos)
+        #posicao_genetico = salva(caminhos, vitimas, tempoMax, base) 
+        posicao_genetico = genetico(caminhos, vitimas, tempoMax)
+        print("ESCOLHIDO = ",posicao_genetico)
 
     ## Metodo que define a deliberacao do agente 
     def deliberate(self):
@@ -258,3 +269,5 @@ class AgentExplorer:
 
     def actionDo(self, posAction, action = True):
         self.model.do(posAction, action)
+
+    
