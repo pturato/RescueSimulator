@@ -109,6 +109,11 @@ def evolve(populacao, tempoMax, vitimas, n_de_cromossomos, caminhos, mutate=0.05
         meio = len(homem) // 2 #pega metade dos genes
         filho = homem[:meio] + mulher[meio:] #primeira metade do pai e segunda metade da mãe
         filhos.append(filho) #filho adicionado a lista (nova geração)
+    # while len(filhos) < n_de_cromossomos: #loop até ter o número de cromossomos desejados (quantos indivíduos queremos)
+    #     homem, mulher = selecao_roleta(pais) #roleta para ver quais indivíduos vão fazer parte da reprodução
+    #     meio = randint(0, len(homem)-1) #pega metade dos genes
+    #     filho = homem[:meio] + mulher[meio:] #primeira metade do pai e segunda metade da mãe
+    #     filhos.append(filho) #filho adicionado a lista (nova geração)
     
     # MUTACAO
     #para não ficar preso em um ótimo local (solução boa mas não a melhor)
@@ -182,7 +187,4 @@ def genetico(caminhos, vitimas, tempoMax):
     for i in range(1, len(caminho)):
         caminho_sequencial += (caminho[i][1][1:]) 
     print("caminho_sequencial ",caminho_sequencial)
-
-    sys.exit()
-    #RETORNAR CAMINHO SEQUENCIAL!!!!
-    return populacao[0] #um dos exemplos de boas soluções
+    return caminho_sequencial
