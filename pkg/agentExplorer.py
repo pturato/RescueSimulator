@@ -139,7 +139,7 @@ class AgentExplorer:
 
             #TO DO
             ## função no plano para atualizar matriz de possiveis ações
-            self.plan.run_invalid_action() #passar qual ação deu ruim
+            self.plan.run_invalid_action(self.previousAction) #passar qual ação deu ruim
         else:
         # função no plano para atualizar a matriz de pushback
             self.plan.run_valid_action(self.previousAction)
@@ -161,15 +161,17 @@ class AgentExplorer:
         ## Verifica se tem vitima na posicao atual    
         victimId = self.victimPresenceSensor()
         if victimId > 0 and victimId not in self.vitimas_id:
-            self.vitimas_id.append(victimId)
-            ## coloca a posição e os sinais vitais da vítima encontrada na lista de vítimas
-            self.vitimas.append([(self.currentState.row, self.currentState.col), self.victimVitalSignalsSensor(victimId)])
-            ## consome tempo gasto para ler sinais vitais e aumenta o custo da ação com o total
-            self.tl -= 2.0
-            self.costAll += 2.0
-            print ("vitima encontrada em ", self.currentState, " id: ", victimId, " sinais vitais: ", self.victimVitalSignalsSensor(victimId))
-            print ("vitima encontrada em ", self.currentState, " id: ", victimId, " dif de acesso: ", self.victimDiffOfAcessSensor(victimId))
-        #print(self.vitimas, len(self.vitimas))
+            sinaisVitais = self.victimVitalSignalsSensor(victimId)
+            if len(sinaisVitais) > 0:
+                self.vitimas_id.append(victimId)
+                ## coloca a posição e os sinais vitais da vítima encontrada na lista de vítimas
+                self.vitimas.append([(self.currentState.row, self.currentState.col), sinaisVitais])
+                ## consome tempo gasto para ler sinais vitais e aumenta o custo da ação com o total
+                self.tl -= 2.0
+                self.costAll += 2.0
+                print ("vitima encontrada em ", self.currentState, " id: ", victimId, " sinais vitais: ", self.victimVitalSignalsSensor(victimId))
+                print ("vitima encontrada em ", self.currentState, " id: ", victimId, " dif de acesso: ", self.victimDiffOfAcessSensor(victimId))
+            #print(self.vitimas, len(self.vitimas))
 
         if not self.returning:
             ## verificar o tempo 

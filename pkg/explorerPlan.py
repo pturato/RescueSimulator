@@ -13,7 +13,8 @@ class ExplorerPlan:
         "NE" : (-1, 1),
         "NO" : (-1, -1),
         "SE" : (1, 1),
-        "SO" : (1, -1)
+        "SO" : (1, -1),
+        "NONE": (0, 0)
     }
 
     ANTI_ACTIONS = {
@@ -25,6 +26,49 @@ class ExplorerPlan:
         "NO" : "SE",
         "SE" : "NO",
         "SO" : "NE"
+    }
+
+    INVALID_ACTIONS = {
+        "N": [
+            ("O", "NE"),
+            ("L", "NO"),
+            ("NO", "L"),
+            ("NE", "O"),
+            ("NONE", "NE"),
+            ("NONE", "NO")
+        ],
+
+        "S": [
+            ("O", "SE"),
+            ("L", "SO"),
+            ("SO", "L"),
+            ("SE", "O"),
+            ("NONE", "SE"),
+            ("NONE", "SO")
+        ],
+
+        "L": [
+            ("N", "SE"),
+            ("S", "NE"),
+            ("NE", "S"),
+            ("SE", "N"),
+            ("NONE", "NE"),
+            ("NONE", "SE")
+        ],
+
+        "O": [
+            ("N", "SO"),
+            ("S", "NO"),
+            ("NO", "S"),
+            ("SO", "N"),
+            ("NONE", "NO"),
+            ("NONE", "SO")
+        ],
+
+        "NE": [("N", "L"), ("L", "N")],
+        "NO": [("N", "O"), ("O", "N")],
+        "SE": [("S", "L"), ("L", "S")],
+        "SO": [("O", "S"), ("S", "O")]
     }
 
 
@@ -142,10 +186,22 @@ class ExplorerPlan:
 
         if self.ANTI_ACTIONS[previousAction] in self.actions[self.currentState.row][self.currentState.col]:
             self.actions[self.currentState.row][self.currentState.col].remove(self.ANTI_ACTIONS[previousAction])
+        for action in self.ACTIONS:
+            row = self.currentState.row + self.MOVIMENTS[action][0]
+            col = self.currentState.col + self.MOVIMENTS[action][1]
+            if row >= 0 and col >= 0 and row < self.maxRows and col < self.maxColumns and self.ANTI_ACTIONS[action] in self.actions[row][col]:
+                self.actions[row][col].remove(self.ANTI_ACTIONS[action])
 
     ## TO DO
-    def run_invalid_action(self):
-        pass
+    def run_invalid_action(self, previousAction):
+        if previousAction == "nop":
+            return
+        for relatedActions, actionToRemove in self.INVALID_ACTIONS[previousAction]:
+            row = self.currentState.row + self.MOVIMENTS[relatedActions][0]
+            col = self.currentState.col + self.MOVIMENTS[relatedActions][1]
+            if row > 0 and col > 0 and row < self.maxRows and  col < self.maxColumns:
+                if actionToRemove in self.actions[row][col]:
+                    self.actions[row][col].remove(actionToRemove)
 
     def do(self):
         """
