@@ -124,21 +124,21 @@ class AgentSalvador:
         ## currentAction eh uma tupla na forma: <direcao>, <state>
         result = self.plan.chooseAction()
         if result == None:
-            # print("pve: ", pve(len(self.vitimas), self.model.getNumberOfVictims()), "numero de vitimas encontradas: ", len(self.vitimas))
-            # print("tve: ", tve(self.costAll, len(self.vitimas)))
-            # sinais = []
-            # sinais_encontrados = []
-            # for i in range(self.model.getNumberOfVictims()):
-            #     sinal = self.victimVitalSignalsSensor(i)
-            #     #print("sinal: ", sinal)
-            #     sinais.append(sinal[len(sinal)-1])
+            print("pvs: ", pvs(len(self.plan.vitimas_salvas), self.model.getNumberOfVictims()), "numero de vitimas encontradas: ", len(self.vitimas))
+            print("tvs: ", tvs(self.costAll, len(self.plan.vitimas_salvas)))
+            sinais = []
+            #sinais_encontrados = []
+            for i in range(self.model.getNumberOfVictims()):
+                sinal = self.victimVitalSignalsSensor(i)
+                #print("sinal: ", sinal)
+                sinais.append(sinal[len(sinal)-1])
             # for i in range(len(self.vitimas)):
             #     sinal = self.vitimas[i][1]
             #     #print("sinal: ", sinal)
             #     sinais_encontrados.append(sinal[len(sinal)-1])
             # #print("grav encontradas: ", sinais_encontrados)
             # #print("sinais: ", sinais)
-            # print("veg: ", veg(sinais_encontrados, sinais))
+            print("vsg: ", vsg(self.plan.vitimas_salvas, sinais))
             return -1
         print("Ag deliberou pela acao: ", result[0], " o estado resultado esperado é: ", result[1])
 

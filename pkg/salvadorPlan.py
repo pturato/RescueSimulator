@@ -125,7 +125,9 @@ class SalvadorPlan:
 
     def selectVitimas(self, base, tempoMax):
         caminhos = self.getCaminhos(base)
-        self.path = genetico(caminhos, self.vitimas, tempoMax)
+        result_genetico = genetico(caminhos, self.vitimas, tempoMax)
+        self.path = result_genetico[1]
+        self.vitimas_salvas = result_genetico[0]
         self.posToActions()
 
     def posToActions(self):

@@ -1,11 +1,7 @@
 from asyncio import base_events
 import calculos
-from random import getrandbits, randint, random, choice
-from random import shuffle
+from random import getrandbits, randint, random
 import sys
-
-def genetico():
-    from random import getrandbits, randint, random, choice
 
 def individual(n_de_itens):
     """Cria um membro da populacao"""
@@ -18,18 +14,21 @@ def population(n_de_individuos, n_de_itens):
 def fitness(individuo, tempoMax, vitimas, caminhos): 
     base = 0 #considera a base antes da primeira vítima na lista de individuo
     posicoes_vitimas = []
-    print("Indivíduo ",individuo)
+    #print("Indivíduo ",individuo)
     for i in range(len(individuo)-1):
         if individuo[i]==1:
             posicoes_vitimas.append(i) #guardar as posicoes das vítimas pelo índice da posição que contém 1 no vetor indivíduo
-    #shuffle(posicoes_vitimas) #deixar sequencia de vitimas aleatoria
     
     tempo_caminho = 0.0
     vitimas_salvas = []
     caminho = []
+    vitimas_gravidade=[]
 
     for k in range(len(posicoes_vitimas)-1): #percorre as vítimas
         vitimas_salvas.append(vitimas[posicoes_vitimas[k]+1]) #soma 1 para nunca dar 0, que é nossa base no caminhos
+        #calcula gravidade vítima
+        sinal = vitimas[posicoes_vitimas[k]+1][1] 
+        vitimas_gravidade.append(sinal[len(sinal)-1]) #somente última posição do sinal vital
         if k != len(posicoes_vitimas)-2:
             if caminhos[base][posicoes_vitimas[k]+1] == 0: #ir daquela vítima para ela mesma
                 print("Algo deu errado :(")
@@ -39,27 +38,26 @@ def fitness(individuo, tempoMax, vitimas, caminhos):
             base=posicoes_vitimas[k]+1 #muda a base para a vítima que era o destino
         else:
             #última execução, retorna para a base
-            
             caminho.append(caminhos[base][0])
             tempo_caminho = tempo_caminho + caminhos[base][0][0]
 
-        if (tempo_caminho > tempoMax): #solução não valido
-            print("Inválido :(")
-            return -1
+    if (tempo_caminho > tempoMax): #solução não valido
+        print("Inválido :(")
+        return -1
 
-        vitimas_gravidade = []
-        for vitima in range(len(vitimas)): #pegar sinal vital das vitimas escolhidas na solução
-            sinal = vitimas[vitima][1] 
-            vitimas_gravidade.append(sinal[len(sinal)-1]) #somente última posição do sinal vital
-
-        v = calculos.calcula_num_vitm(vitimas_gravidade) #vetor com o cálculo da gravidade
-        #tenho o menor caminho e o genetivo vai escolher o com maior vitimas por gravidade
-        print("Valor do cálculo da gravidade ", 4*v[3]+3*v[2]+2*v[1]+v[0])
-        fitness = (4*v[3]+3*v[2]+2*v[1]+v[0])/tempo_caminho #quanto menor o tempo do caminho, maior o resultado da solução
-        print("Tempo caminho ",tempo_caminho)
-        print("Valor do cálculo total ", fitness) 
+    sinal_total = []
+    vitimas_gravidade_total = []
+    for vitima in range(len(vitimas)): #pegar sinal vital das vitimas escolhidas na solução
+        sinal_total = vitimas[vitima][1] 
+        vitimas_gravidade_total.append(sinal_total[len(sinal_total)-1]) #somente última posição do sinal vital
+    
+    #tenho o menor caminho e o genetivo vai escolher o com maior vitimas por gravidade
+    #print("Vitimas gravidade ",vitimas_gravidade)
+    fitness = calculos.vsg(vitimas_gravidade, vitimas_gravidade_total)
+    #print("Tempo caminho ",tempo_caminho)
+    #print("Valor do cálculo total ", fitness) 
         
-        return fitness #se for um individuo valido retorna seu valor, sendo quanto maior melhor
+    return fitness #se for um individuo valido retorna seu valor, sendo quanto maior melhor
 
 def media_fitness(populacao, tempoMax, vitimas, caminhos): #só leva em consideracao os elementos que respeitem o tempo maximo
     """Encontra a avalicao media da populacao"""
@@ -99,21 +97,16 @@ def evolve(populacao, tempoMax, vitimas, n_de_cromossomos, caminhos, mutate=0.05
     """Tabula cada individuo e o seu fitness"""
     pais = [ [fitness(x, tempoMax, vitimas, caminhos), x] for x in populacao if fitness(x, tempoMax, vitimas, caminhos) >= 0]
     #só armazena indivíduos válidos (não ultrapassa o tempo máximo)
-    print("Pais ",pais) #achar individuos 
+    #print("Pais ",pais) #achar individuos 
     pais.sort(reverse=True) #ordem crescente na lista, colocando os melhores indivíduos no começo
     
     # REPRODUCAO
     filhos = []
     while len(filhos) < n_de_cromossomos: #loop até ter o número de cromossomos desejados (quantos indivíduos queremos)
         homem, mulher = selecao_roleta(pais) #roleta para ver quais indivíduos vão fazer parte da reprodução
-        meio = len(homem) // 2 #pega metade dos genes
+        meio = randint(0, len(homem)-1) #pega metade dos genes
         filho = homem[:meio] + mulher[meio:] #primeira metade do pai e segunda metade da mãe
         filhos.append(filho) #filho adicionado a lista (nova geração)
-    # while len(filhos) < n_de_cromossomos: #loop até ter o número de cromossomos desejados (quantos indivíduos queremos)
-    #     homem, mulher = selecao_roleta(pais) #roleta para ver quais indivíduos vão fazer parte da reprodução
-    #     meio = randint(0, len(homem)-1) #pega metade dos genes
-    #     filho = homem[:meio] + mulher[meio:] #primeira metade do pai e segunda metade da mãe
-    #     filhos.append(filho) #filho adicionado a lista (nova geração)
     
     # MUTACAO
     #para não ficar preso em um ótimo local (solução boa mas não a melhor)
@@ -130,7 +123,7 @@ def evolve(populacao, tempoMax, vitimas, n_de_cromossomos, caminhos, mutate=0.05
 
 def genetico(caminhos, vitimas, tempoMax): 
     n_de_cromossomos = 150
-    geracoes = 30
+    geracoes = 100
     n_de_itens = len(vitimas)-1 #numeros de vítimas
 
     #EXECUCAO DOS PROCEDIMENTOS
@@ -140,18 +133,7 @@ def genetico(caminhos, vitimas, tempoMax):
     for i in range(geracoes): #repete até o valor de gerações definido
         populacao = evolve(populacao, tempoMax, vitimas, n_de_cromossomos, caminhos) #nova geração
         historico_de_fitness.append(media_fitness(populacao, tempoMax, vitimas, caminhos)) #média de pontuação que a nova geração fez
-        
-    #PRINTS DO TERMINAL
-    for indice,dados in enumerate(historico_de_fitness):
-        print("Geracao: ", indice," | Média da população: ", dados)
 
-    print("\nTempo máximo:",tempoMax,"\n\nVítimas:")
-    for indice,i in enumerate(vitimas):
-        print("Vítima ",indice+1,": ",i[0]," | ",i[1])
-        
-    print("\nExemplos de boas solucoes: ")
-    for i in range(5):
-        print(populacao[i])
 
     individuo = populacao[0]
     posicoes_vitimas = []
@@ -163,8 +145,12 @@ def genetico(caminhos, vitimas, tempoMax):
     tempo_caminho = 0.0
     vitimas_salvas = []
     caminho = []
+    vitimas_gravidade = []
     for k in range(len(posicoes_vitimas)-1):
         vitimas_salvas.append(vitimas[posicoes_vitimas[k]+1]) #somei um para nunca dar 0, que é nossa base no caminhos
+        #calcula gravidade vítima
+        sinal = vitimas[posicoes_vitimas[k]+1][1] 
+        vitimas_gravidade.append(sinal[len(sinal)-1]) #somente última posição do sinal vital
         if k != len(posicoes_vitimas)-2:
             if caminhos[base][posicoes_vitimas[k]+1] == 0: #ir daquela vítima para ela mesma
                 print("Algo deu errado :(")
@@ -175,16 +161,16 @@ def genetico(caminhos, vitimas, tempoMax):
         else:
             #volta para base
             caminho.append(caminhos[base][0])
-            #print("CAMINHOS ",caminhos)
-            #print("AQUI ", caminhos[posicoes_vitimas[k]+1][base][0])
             tempo_caminho = tempo_caminho + caminhos[base][0][0]
-    print("Caminho :\n",caminho)
+    #print("Caminho :\n",caminho)
     print("Tempo deste caminho: ",tempo_caminho)
     print("Tempo máximo: ",tempoMax)
     print("Número de vítimas salvas: ",len(posicoes_vitimas))
+    #print("Vitimas gravidade ",vitimas_gravidade)
 
     caminho_sequencial = caminho[0][1]
     for i in range(1, len(caminho)):
         caminho_sequencial += (caminho[i][1][1:]) 
-    print("caminho_sequencial ",caminho_sequencial)
-    return caminho_sequencial
+    #print("caminho_sequencial ",caminho_sequencial)
+
+    return (vitimas_gravidade, caminho_sequencial)
