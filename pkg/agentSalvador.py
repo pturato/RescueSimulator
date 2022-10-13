@@ -6,7 +6,7 @@ from aEstrela import astar
 ## Importa Classes necessarias para o funcionamento
 from model import Model
 from problem import Problem
-from returnPlan import ReturnPlan
+from salvadorPlan import SalvadorPlan
 from state import State
 from random import randint
 from calculos import *
@@ -22,7 +22,7 @@ from planner import Planner
 
 ## Classe que define o Agente
 class AgentSalvador:
-    def __init__(self, model, configDict):
+    def __init__(self, model, configDict, vitimas, maze):
         """ 
         Construtor do agente random
         @param model referencia o ambiente onde o agente estah situado
@@ -36,6 +36,12 @@ class AgentSalvador:
         
         ## Pega o tipo de mesh, que está no model (influência na movimentação)
         self.mesh = self.model.mesh
+
+        ## incializa lista de vitimas encontradas no ambiente
+        self.vitimas = vitimas
+
+        ## guarda as posições exploradas
+        self.maze = maze
 
 
         ## Cria a instância do problema na mente do agente (sao suas crencas)
@@ -69,7 +75,8 @@ class AgentSalvador:
         self.costAll = 0
 
         ## Cria a instancia do plano para se movimentar aleatoriamente no labirinto (sem nenhuma acao) 
-        self.plan = ExplorerPlan(model.rows, model.columns, self.prob.goalState, initial, "goal", self.mesh)
+        self.plan = SalvadorPlan(model.rows, model.columns, self.prob.goalState, initial, self.maze, self.vitimas, "goal", self.mesh)
+        self.plan.selectVitimas(self.base, self.tl)
 
         ## adicionar crencas sobre o estado do ambiente ao plano - neste exemplo, o agente faz uma copia do que existe no ambiente.
         ## Em situacoes de exploracao, o agente deve aprender em tempo de execucao onde estao as paredes
@@ -79,57 +86,18 @@ class AgentSalvador:
         self.libPlan=[self.plan]
 
         ## Cria a instancia do plano para se movimentar aleatoriamente no labirinto (sem nenhuma acao) 
-        self.plan = ReturnPlan(model.rows, model.columns, self.prob.goalState, initial, "goal", self.mesh)
+        #self.plan = ReturnPlan(model.rows, model.columns, self.prob.goalState, initial, "goal", self.mesh)
 
         ## Adiciona o(s) planos a biblioteca de planos do agente
-        self.libPlan.append(self.plan)
+        #self.libPlan.append(self.plan)
 
         ## inicializa acao do ciclo anterior com o estado esperado
         self.previousAction = "nop"    ## nenhuma (no operation)
         self.expectedState = self.currentState
 
-        ## incializa lista de vitimas encontradas no ambiente
-        self.vitimas = []
-        self.vitimas_id = []
-
-        ## guarda as posições exploradas
-        self.positions = []
-
-        ## tipos de estados
-        self.PAREDE = 1
-        self.LIVRE = 0
-
-        ## inicializa as posições como paredes
-        for i in range(configDict["YMax"]):
-            position = []
-            for j in range(configDict["XMax"]):
-                position.append(self.PAREDE)
-            self.positions.append(position)
-
-        ## tempo de volta
-        self.tv = 0
-
-        self.bestPath = []
-
-        self.returning = False
-
-    def planoAcao(self, vitimas, maze):
-        #REVER AQUI
-        #ARRUMAR A BASE NO TODOS PARA TODOS
-        tempoMax = self.tl
-        #print("base", base, " e tempo max" ,tempoMax)
-        caminhos = todosParaTodos(maze, vitimas, tuple(self.base)) 
-        #print(caminhos)
-        #posicao_genetico = salva(caminhos, vitimas, tempoMax, base) 
-        posicao_genetico = genetico(caminhos, vitimas, tempoMax)
-        print("ESCOLHIDO = ",posicao_genetico)
 
     ## Metodo que define a deliberacao do agente 
     def deliberate(self):
-        ## identifica tipo de estado
-        self.positions[self.currentState.row][self.currentState.col] = self.LIVRE 
-        #print("POSITIONS ",self.positions)
-
         ## Verifica se há algum plano a ser executado
         if len(self.libPlan) == 0:
             return -1   ## fim da execucao do agente, acabaram os planos
@@ -144,17 +112,6 @@ class AgentSalvador:
         self.plan.updateCurrentState(self.currentState) # atualiza o current state no plano
         print("Ag cre que esta em: ", self.currentState)
 
-        ## Verifica se a execução do acao do ciclo anterior funcionou ou nao
-        if not (self.currentState == self.expectedState):
-            print("---> erro na execucao da acao ", self.previousAction, ": esperava estar em ", self.expectedState, ", mas estou em ", self.currentState)
-
-            #TO DO
-            ## função no plano para atualizar matriz de possiveis ações
-            self.plan.run_invalid_action() #passar qual ação deu ruim
-        else:
-        # função no plano para atualizar a matriz de pushback
-            self.plan.run_valid_action(self.previousAction)
-
         ## Funcionou ou nao, vou somar o custo da acao com o total 
         self.costAll += self.prob.getActionCost(self.previousAction)
         print ("Custo até o momento (com a ação escolhida):", self.costAll) 
@@ -163,56 +120,25 @@ class AgentSalvador:
         self.tl -= self.prob.getActionCost(self.previousAction)
         print("Tempo disponivel: ", self.tl)
 
-        ## Verifica se atingiu o estado objetivo
-        ## Poderia ser outra condição, como atingiu o custo máximo de operação
-        # if self.prob.goalTest(self.currentState):
-        #     print("!!! Objetivo atingido !!!")
-        #     del self.libPlan[0]  ## retira plano da biblioteca
-        
-        ## Verifica se tem vitima na posicao atual    
-        victimId = self.victimPresenceSensor()
-        if victimId > 0 and victimId not in self.vitimas_id:
-            self.vitimas_id.append(victimId)
-            ## coloca a posição e os sinais vitais da vítima encontrada na lista de vítimas
-            self.vitimas.append([(self.currentState.row, self.currentState.col), self.victimVitalSignalsSensor(victimId)])
-            ## consome tempo gasto para ler sinais vitais e aumenta o custo da ação com o total
-            self.tl -= 2.0
-            self.costAll += 2.0
-            print ("vitima encontrada em ", self.currentState, " id: ", victimId, " sinais vitais: ", self.victimVitalSignalsSensor(victimId))
-            print ("vitima encontrada em ", self.currentState, " id: ", victimId, " dif de acesso: ", self.victimDiffOfAcessSensor(victimId))
-        #print(self.vitimas, len(self.vitimas))
-
-        if not self.returning:
-            ## verificar o tempo 
-            self.tv = self.libPlan[1].getTempoVolta(self.positions, 
-                                (self.currentState.row, self.currentState.col), 
-                                (self.plan.initialState.row, self.plan.initialState.col))
-            print("Tv", self.tv)
-            if self.tv > self.tl - 3.5:
-            #if self.tv > self.tl - 10:
-                self.libPlan.pop(0)
-                self.plan = self.libPlan[0]
-                self.plan.updateCurrentState(self.currentState)
-                self.returning = True
         ## Define a proxima acao a ser executada
         ## currentAction eh uma tupla na forma: <direcao>, <state>
         result = self.plan.chooseAction()
         if result == None:
-            print("pve: ", pve(len(self.vitimas), self.model.getNumberOfVictims()), "numero de vitimas encontradas: ", len(self.vitimas))
-            print("tve: ", tve(self.costAll, len(self.vitimas)))
-            sinais = []
-            sinais_encontrados = []
-            for i in range(self.model.getNumberOfVictims()):
-                sinal = self.victimVitalSignalsSensor(i)
-                #print("sinal: ", sinal)
-                sinais.append(sinal[len(sinal)-1])
-            for i in range(len(self.vitimas)):
-                sinal = self.vitimas[i][1]
-                #print("sinal: ", sinal)
-                sinais_encontrados.append(sinal[len(sinal)-1])
-            #print("grav encontradas: ", sinais_encontrados)
-            #print("sinais: ", sinais)
-            print("veg: ", veg(sinais_encontrados, sinais))
+            # print("pve: ", pve(len(self.vitimas), self.model.getNumberOfVictims()), "numero de vitimas encontradas: ", len(self.vitimas))
+            # print("tve: ", tve(self.costAll, len(self.vitimas)))
+            # sinais = []
+            # sinais_encontrados = []
+            # for i in range(self.model.getNumberOfVictims()):
+            #     sinal = self.victimVitalSignalsSensor(i)
+            #     #print("sinal: ", sinal)
+            #     sinais.append(sinal[len(sinal)-1])
+            # for i in range(len(self.vitimas)):
+            #     sinal = self.vitimas[i][1]
+            #     #print("sinal: ", sinal)
+            #     sinais_encontrados.append(sinal[len(sinal)-1])
+            # #print("grav encontradas: ", sinais_encontrados)
+            # #print("sinais: ", sinais)
+            # print("veg: ", veg(sinais_encontrados, sinais))
             return -1
         print("Ag deliberou pela acao: ", result[0], " o estado resultado esperado é: ", result[1])
 

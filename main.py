@@ -50,26 +50,19 @@ def main():
         model.draw()
         time.sleep(0.01) # para dar tempo de visualizar as movimentacoes do agente no labirinto
     model.draw()    
-    #time.sleep(3)
 
     vitimas = agent.vitimasEncontradas()
     maze = agent.mazeExplorado()
-    #print(maze)
-    #print(vitimas)
 
     # Cria um agente salvador
-    agentSalvador = AgentSalvador(model,configDict.ambiente) 
+    agentSalvador = AgentSalvador(model,configDict.ambiente, vitimas, maze) 
 
-    #plano de ação
-    agentSalvador.planoAcao(vitimas, maze)
-
-    # ## Ciclo de raciocínio do agente
-    # agentSalvador.deliberate()
-    # while agentSalvador.deliberate() != -1:
-    #     model.draw()
-    #     time.sleep(0.01) # para dar tempo de visualizar as movimentacoes do agente no labirinto
-    # model.draw()    
-    # #time.sleep(3)
+    ## Ciclo de raciocínio do agente
+    agentSalvador.deliberate()
+    while agentSalvador.deliberate() != -1:
+        model.draw()
+        time.sleep(0.01) # para dar tempo de visualizar as movimentacoes do agente no labirinto
+    model.draw()    
         
 if __name__ == '__main__':
     main()
